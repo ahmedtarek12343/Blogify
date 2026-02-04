@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ui/theme-provider";
+import { ConvexClientProvider } from "@/components/web/ConvexClientProvider";
+import { Toaster } from "sonner";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +28,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {" "}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <main className="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8">
+            <ConvexClientProvider>{children}</ConvexClientProvider>
+            <Toaster position="bottom-right" richColors />
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );
