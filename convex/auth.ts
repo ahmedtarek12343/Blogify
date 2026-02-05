@@ -13,6 +13,12 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
   return betterAuth({
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
+    socialProviders:{
+      google:{
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      }
+    },
     // Configure simple, non-verified email/password to get started
     emailAndPassword: {
       enabled: true,

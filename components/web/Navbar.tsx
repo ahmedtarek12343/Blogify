@@ -8,6 +8,8 @@ import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { NavLink } from "./NavLink";
 import { motion } from "framer-motion";
+import SearchInput from "./SearchInput";
+import SignedInMenu from "../comp-377";
 
 export function Navbar() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -53,31 +55,13 @@ export function Navbar() {
             </Link>
           </>
         )}
-        {isAuthenticated && !isLoading && (
-          <Button
-            variant="outline"
-            onClick={() =>
-              authClient.signOut({
-                fetchOptions: {
-                  onSuccess: () => {
-                    toast.success("Signed out successfully");
-                  },
-                  onError: (error) => {
-                    toast.error(error.error.message);
-                  },
-                },
-              })
-            }
-          >
-            Sign out
-          </Button>
-        )}
         {isLoading && (
           <Button variant="outline">
             <Loader2Icon className="animate-spin" />
           </Button>
         )}
-        <ThemeToggle />
+        <SearchInput /> <ThemeToggle />
+        {isAuthenticated && !isLoading && <SignedInMenu />}
       </div>
     </motion.nav>
   );

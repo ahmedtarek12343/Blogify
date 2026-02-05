@@ -1,7 +1,15 @@
 "use client";
 import { Doc } from "@/convex/_generated/dataModel";
 import { formatRelativeTime } from "@/lib/utils";
-import { User, Reply, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  User,
+  Reply,
+  ChevronDown,
+  ChevronUp,
+  Trash2Icon,
+  Edit2Icon,
+  Heart,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -21,7 +29,7 @@ interface CommentProps {
 const Comment = ({ comment, depth = 0 }: CommentProps) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
-
+  const user = useQuery(api.auth.getCurrentUser);
   const replies = useQuery(api.comments.getReplyComments, {
     parentCommentId: comment._id,
   });
@@ -73,47 +81,75 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
         </div>
 
         <div className="flex flex-col w-full bg-muted/40 p-3 rounded-lg rounded-tl-none border border-border/50 hover:bg-muted/60 transition-colors">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-sm">{comment.authorName}</span>
-            <span className="text-xs text-muted-foreground">•</span>
-            <span className="text-xs text-muted-foreground">
-              {formatRelativeTime(comment._creationTime)}
-            </span>
-          </div>
+          <div className="flex justify-between items-center">
+            <div className="">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-semibold text-sm">
+                  {comment.authorName}
+                </span>
+                <span className="text-xs text-muted-foreground">•</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatRelativeTime(comment._creationTime)}
+                </span>
+              </div>
 
-          <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
-            {comment.body}
-          </p>
+              <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                {comment.body}
+              </p>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 mt-2">
-            {canReply && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowReplyForm(!showReplyForm)}
-                className="h-7 text-xs"
-              >
-                <Reply className="w-3 h-3 mr-1" />
-                Reply
-              </Button>
-            )}
-
-            {hasReplies && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowReplies(!showReplies)}
-                className="h-7 text-xs"
-              >
-                {showReplies ? (
-                  <ChevronUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <ChevronDown className="w-3 h-3 mr-1" />
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-2">
+                {canReply && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowReplyForm(!showReplyForm)}
+                    className="h-7 text-xs"
+                  >
+                    <Reply className="w-3 h-3 mr-1" />
+                    Reply
+                  </Button>
                 )}
-                {replies.length} {replies.length === 1 ? "reply" : "replies"}
-              </Button>
-            )}
+
+                {hasReplies && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowReplies(!showReplies)}
+                    className="h-7 text-xs"
+                  >
+                    {showReplies ? (
+                      <ChevronUp className="w-3 h-3 mr-1" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 mr-1" />
+                    )}
+                    {replies.length}{" "}
+                    {replies.length === 1 ? "reply" : "replies"}
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center">
+              {user?._id === comment.authorId && (
+                <div className="flex items-center">
+                  <div className="">
+                    <Button variant="ghost" size="sm">
+                      <Trash2Icon />
+                    </Button>
+                  </div>
+                  <div className="">
+                    <Button variant="ghost" size="sm">
+                      <Edit2Icon />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <div className="">
+                <Button variant="ghost" size="sm">
+                  <Heart />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

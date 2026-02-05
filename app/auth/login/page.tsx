@@ -2,7 +2,6 @@
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
@@ -18,6 +17,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { Separator } from "@/components/ui/separator";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -55,6 +55,29 @@ const LoginPage = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground">Sign in to your account</p>
+        </div>
+        <Separator />
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={() => {
+              authClient.signIn.social({
+                provider: "google",
+                fetchOptions: {
+                  onSuccess: () => {
+                    router.push("/");
+                    router.refresh();
+                  },
+                  onError: (error) => {
+                    toast.error(error.error.message);
+                  },
+                },
+              });
+            }}
+            variant="outline"
+            className="w-full"
+          >
+            Sign in with Google
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

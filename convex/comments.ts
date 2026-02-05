@@ -44,3 +44,18 @@ export const AddComment = mutation({
     });
   },
 });
+
+export const DeleteComment = mutation({
+  args: { commentId: v.id("comments") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) {
+      throw new ConvexError("User not authenticated");
+    }
+    const comment = await ctx.db.get("comments", args.commentId);
+    if (!comment) {
+      throw new ConvexError("Comment not found");
+    }
+    await ctx.db.delete("comments", args.commentId);
+  },
+});
