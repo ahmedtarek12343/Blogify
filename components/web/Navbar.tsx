@@ -3,13 +3,11 @@ import Link from "next/link";
 import { Button, buttonVariants } from "../ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useConvexAuth } from "convex/react";
-import { authClient } from "@/lib/auth-client";
 import { Loader2Icon } from "lucide-react";
-import { toast } from "sonner";
 import { NavLink } from "./NavLink";
 import { motion } from "framer-motion";
-import SearchInput from "./SearchInput";
 import SignedInMenu from "../comp-377";
+import BlogSearch from "../comp-333";
 
 export function Navbar() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -28,7 +26,7 @@ export function Navbar() {
             </h1>
           </Link>
         </div>
-        <ul className="flex h-full items-center">
+        <ul className="hidden md:flex h-full items-center">
           <li className="h-full flex items-center">
             <NavLink href="/">Home</NavLink>
           </li>
@@ -55,12 +53,15 @@ export function Navbar() {
             </Link>
           </>
         )}
+        <BlogSearch />
+        <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle />
+        </div>
         {isLoading && (
           <Button variant="outline">
             <Loader2Icon className="animate-spin" />
           </Button>
         )}
-        <SearchInput /> <ThemeToggle />
         {isAuthenticated && !isLoading && <SignedInMenu />}
       </div>
     </motion.nav>

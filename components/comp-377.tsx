@@ -2,7 +2,10 @@ import {
   BoltIcon,
   BookOpenIcon,
   ChevronDownIcon,
+  Edit2Icon,
+  HomeIcon,
   Layers2Icon,
+  ListIcon,
   Loader2Icon,
   LogOutIcon,
   PinIcon,
@@ -22,6 +25,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 export default function SignedInMenu() {
   const user = useQuery(api.auth.getCurrentUser);
@@ -46,7 +51,7 @@ export default function SignedInMenu() {
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-w-64">
+      <DropdownMenuContent align="end" className="w-70">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="truncate font-medium text-foreground text-sm">
             {user.name}
@@ -58,18 +63,22 @@ export default function SignedInMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/profile">
-              <BoltIcon aria-hidden="true" className="opacity-60" size={16} />
-              <span>Profile</span>
+            <Link href="/">
+              <HomeIcon aria-hidden="true" className="opacity-60" size={16} />
+              <span>Home</span>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Layers2Icon aria-hidden="true" className="opacity-60" size={16} />
-            <span>Settings</span>
+          <DropdownMenuItem asChild>
+            <Link href="/blog">
+              <ListIcon aria-hidden="true" className="opacity-60" size={16} />
+              <span>Blogs</span>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <BookOpenIcon aria-hidden="true" className="opacity-60" size={16} />
-            <span>Help</span>
+          <DropdownMenuItem asChild>
+            <Link href="/create">
+              <Edit2Icon aria-hidden="true" className="opacity-60" size={16} />
+              <span>Create</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -78,15 +87,37 @@ export default function SignedInMenu() {
             <PinIcon aria-hidden="true" className="opacity-60" size={16} />
             <span>Bookmarks</span>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <UserPenIcon aria-hidden="true" className="opacity-60" size={16} />
-            <span>Account</span>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <UserPenIcon
+                aria-hidden="true"
+                className="opacity-60"
+                size={16}
+              />
+              <span>Account</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <LogOutIcon aria-hidden="true" className="opacity-60" size={16} />
-          <span>Logout</span>
+        <DropdownMenuItem asChild>
+          <Button
+            className="w-full"
+            onClick={() =>
+              authClient.signOut({
+                fetchOptions: {
+                  onSuccess: () => {
+                    toast.success("Logged out");
+                  },
+                  onError: () => {
+                    toast.error("Failed to log out");
+                  },
+                },
+              })
+            }
+          >
+            <LogOutIcon aria-hidden="true" className="opacity-60" size={16} />
+            <span>Logout</span>
+          </Button>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

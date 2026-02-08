@@ -20,5 +20,48 @@ export default defineSchema({
     authorName: v.string(),
     parentCommentId: v.optional(v.id("comments")),
     body: v.string(),
-  }),
+    isEdited: v.optional(v.boolean()),
+  })
+    .index("by_post_id", {
+      fields: ["postId"],
+    })
+    .index("by_parent_comment_id", {
+      fields: ["parentCommentId"],
+    }),
+  likedcomments: defineTable({
+    authorId: v.string(),
+    commentId: v.id("comments"),
+  })
+    .index("by_author_id", {
+      fields: ["authorId"],
+    })
+    .index("by_comment_id", {
+      fields: ["commentId"],
+    })
+    .index("by_author_and_comment", {
+      fields: ["authorId", "commentId"],
+    }),
+  likedposts: defineTable({
+    authorId: v.string(),
+    postId: v.id("posts"),
+  })
+    .index("by_author_id", {
+      fields: ["authorId"],
+    })
+    .index("by_post_id", {
+      fields: ["postId"],
+    }),
+  follow: defineTable({
+    followerId: v.id("user"),
+    followingId: v.string(),
+  })
+    .index("by_follower_id", {
+      fields: ["followerId"],
+    })
+    .index("by_following_id", {
+      fields: ["followingId"],
+    })
+    .index("by_follower_and_following", {
+      fields: ["followerId", "followingId"],
+    }),
 });

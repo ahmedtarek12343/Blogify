@@ -6,8 +6,10 @@ import Comment from "./Comment";
 
 const CommentsView = ({
   comments,
+  users,
 }: {
   comments: Doc<"comments">[] | undefined;
+  users: any;
 }) => {
   const topLevelComments = comments?.filter(
     (comment) => !comment.parentCommentId,
@@ -37,7 +39,7 @@ const CommentsView = ({
   return (
     <div className="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-2">
       {topLevelComments.map((comment) => (
-        <Comment key={comment._id} comment={comment} depth={0} />
+        <Comment key={comment._id} comment={comment} depth={0} users={users} />
       ))}
     </div>
   );

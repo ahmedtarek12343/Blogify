@@ -42,10 +42,12 @@ const CommentSection = ({ postId }: { postId: Id<"posts"> }) => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <MessageSquare />
-        <p className="text-xl font-bold">{comments?.length} Comments</p>
+        <p className="text-xl font-bold">
+          {comments?.comments.length} Comments
+        </p>
       </CardHeader>
       <CardContent>
-        <CommentsView comments={comments} />
+        <CommentsView comments={comments?.comments} users={comments?.users} />
         <form
           onSubmit={handleSubmit(onSubmit)}
           onKeyDown={(e) => {
@@ -61,7 +63,11 @@ const CommentSection = ({ postId }: { postId: Id<"posts"> }) => {
               control={control}
               render={({ field, fieldState }) => (
                 <>
-                  <Input {...field} className="mt-5" />
+                  <Input
+                    placeholder="Add a comment..."
+                    {...field}
+                    className="mt-5"
+                  />
                   {fieldState.error && (
                     <p className="text-red-500 text-sm">
                       {fieldState.error.message}

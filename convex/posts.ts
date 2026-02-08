@@ -59,7 +59,7 @@ export const deletePost = mutation({
     const post = await ctx.db.get(args.id);
     const comments = await ctx.db
       .query("comments")
-      .filter((q) => q.eq(q.field("postId"), args.id))
+      .withIndex("by_post_id", (q) => q.eq("postId", args.id))
       .collect();
     if (!post) {
       throw new ConvexError("Post not found");

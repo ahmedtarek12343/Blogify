@@ -46,8 +46,6 @@ const CreatePage = () => {
   });
 
   async function onSubmit(values: z.infer<typeof blogSchema>) {
-    console.log(values);
-
     try {
       let storageId = undefined;
       if (values.image) {

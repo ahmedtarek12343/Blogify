@@ -1,6 +1,7 @@
 "use client";
 import { Doc } from "@/convex/_generated/dataModel";
 import { formatRelativeTime } from "@/lib/utils";
+import Image from "next/image";
 import {
   User,
   Reply,
@@ -10,6 +11,7 @@ import {
   Edit2Icon,
   Heart,
 } from "lucide-react";
+
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -20,15 +22,23 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import { ConvexError } from "convex/values";
 import { Input } from "../ui/input";
+import DeleteModal from "../comp-313";
+import EditModal from "./EditModal";
+import ShowLikesModal from "./ShowLikesModal";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface CommentProps {
   comment: Doc<"comments">;
   depth?: number;
+  users: any;
 }
 
-const Comment = ({ comment, depth = 0 }: CommentProps) => {
+const Comment = ({ comment, depth = 0, users }: CommentProps) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showLikedUsers, setShowLikedUsers] = useState(false);
   const user = useQuery(api.auth.getCurrentUser);
   const replies = useQuery(api.comments.getReplyComments, {
     parentCommentId: comment._id,
@@ -43,6 +53,45 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
     },
   });
 
+  const toggleLike = useMutation(api.comments.ToggleLike).withOptimisticUpdate(
+    (localStore, { commentId }) => {
+      const userId = user?._id;
+      if (!userId) return;
+
+      const likes = localStore.getQuery(api.comments.getLikesByCommentId, {
+        commentId,
+      });
+
+      if (!likes) return;
+
+      const alreadyLiked = likes.users.some((u) => u?._id === userId);
+
+      if (alreadyLiked) {
+        // remove like
+        localStore.setQuery(
+          api.comments.getLikesByCommentId,
+          { commentId },
+          {
+            likes: likes.likes.filter((l) => l.authorId !== userId),
+            users: likes.users.filter((u) => u?._id !== userId),
+          },
+        );
+      } else {
+        // add like
+        localStore.setQuery(
+          api.comments.getLikesByCommentId,
+          { commentId },
+          {
+            likes: [...likes.likes, {} as any],
+            users: [...likes.users, { _id: userId } as any],
+          },
+        );
+      }
+    },
+  );
+  const getLikesByCommentId = useQuery(api.comments.getLikesByCommentId, {
+    commentId: comment._id,
+  });
   async function onSubmit(data: { body: string }) {
     try {
       await AddComment({
@@ -76,7 +125,17 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
       >
         <div className="shrink-0">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-            <User className="w-4 h-4" />
+            {users?.find((u: any) => u._id === comment.authorId)?.image ? (
+              <Image
+                src={users?.find((u: any) => u._id === comment.authorId)?.image}
+                alt="User"
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+            ) : (
+              <User className="w-4 h-4" />
+            )}
           </div>
         </div>
 
@@ -91,6 +150,12 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
                 <span className="text-xs text-muted-foreground">
                   {formatRelativeTime(comment._creationTime)}
                 </span>
+
+                {comment.isEdited && (
+                  <span className="text-xs text-muted-foreground">
+                    (Edited)
+                  </span>
+                )}
               </div>
 
               <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
@@ -133,20 +198,62 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
               {user?._id === comment.authorId && (
                 <div className="flex items-center">
                   <div className="">
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      onClick={() => setShowDeleteModal(true)}
+                      variant="ghost"
+                      size="sm"
+                    >
                       <Trash2Icon />
                     </Button>
                   </div>
                   <div className="">
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      onClick={() => setShowEditModal(true)}
+                      variant="ghost"
+                      size="sm"
+                    >
                       <Edit2Icon />
                     </Button>
                   </div>
                 </div>
               )}
-              <div className="">
-                <Button variant="ghost" size="sm">
-                  <Heart />
+              <div className="flex items-center">
+                <motion.div
+                  whileTap={{ scale: 1.3 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <Button
+                    onClick={() => toggleLike({ commentId: comment._id })}
+                    variant="ghost"
+                    size="sm"
+                    className="pr-0"
+                  >
+                    {getLikesByCommentId?.users.some(
+                      (like) => like?._id === user?._id,
+                    ) ? (
+                      <Heart className="fill-red-500 stroke-red-500" />
+                    ) : (
+                      <Heart />
+                    )}
+                  </Button>
+                </motion.div>
+                <Button
+                  variant={"link"}
+                  onClick={() => setShowLikedUsers(true)}
+                  className="text-foreground"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={getLikesByCommentId?.likes.length}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      layout
+                      transition={{ duration: 0.2 }}
+                    >
+                      {getLikesByCommentId?.likes.length || ""}
+                    </motion.p>
+                  </AnimatePresence>
                 </Button>
               </div>
             </div>
@@ -204,10 +311,30 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
       {showReplies && hasReplies && (
         <div className="flex flex-col gap-2">
           {replies.map((reply) => (
-            <Comment key={reply._id} comment={reply} depth={depth + 1} />
+            <Comment
+              key={reply._id}
+              comment={reply}
+              depth={depth + 1}
+              users={users}
+            />
           ))}
         </div>
       )}
+      <DeleteModal
+        comment={comment}
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+      />
+      <EditModal
+        comment={comment}
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+      />
+      <ShowLikesModal
+        users={getLikesByCommentId?.users as any}
+        open={showLikedUsers}
+        onOpenChange={setShowLikedUsers}
+      />
     </div>
   );
 };
