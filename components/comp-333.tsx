@@ -49,7 +49,6 @@ export default function BlogSearch() {
         }
       : "skip",
   );
-  console.log(term, results);
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {

@@ -44,6 +44,8 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
     parentCommentId: comment._id,
   });
 
+  const AddNotification = useMutation(api.notifications.AddNotifications);
+
   const AddComment = useMutation(api.comments.AddComment);
 
   const { control, reset, handleSubmit } = useForm({
@@ -92,6 +94,10 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
   const getLikesByCommentId = useQuery(api.comments.getLikesByCommentId, {
     commentId: comment._id,
   });
+
+  const likeExists = getLikesByCommentId?.users.some(
+    (like) => like?._id === user?._id,
+  );
   async function onSubmit(data: { body: string }) {
     try {
       await AddComment({
@@ -223,14 +229,29 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <Button
-                    onClick={() => toggleLike({ commentId: comment._id })}
+                    onClick={() => {
+                      try {
+                        toggleLike({ commentId: comment._id });
+                        if (!likeExists) {
+                          AddNotification({
+                            type: "like",
+                            userId: comment.authorId,
+                            message: `${user?.name} liked your comment : ${comment.body.slice(0, 40)}...`,
+                          });
+                        }
+                      } catch (error) {
+                        toast.error(
+                          error instanceof ConvexError
+                            ? error.message
+                            : "Failed to like comment",
+                        );
+                      }
+                    }}
                     variant="ghost"
                     size="sm"
                     className="pr-0"
                   >
-                    {getLikesByCommentId?.users.some(
-                      (like) => like?._id === user?._id,
-                    ) ? (
+                    {likeExists ? (
                       <Heart className="fill-red-500 stroke-red-500" />
                     ) : (
                       <Heart />
@@ -288,7 +309,25 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
               )}
             />
             <div className="flex gap-2">
-              <Button type="submit" size="sm">
+              <Button
+                onClick={async () => {
+                  try {
+                    await AddNotification({
+                      userId: comment.authorId,
+                      message: `${user?.name} replied to your comment : ${comment.body.slice(0, 40)}...`,
+                      type: "comment",
+                    });
+                  } catch (error) {
+                    toast.error(
+                      error instanceof ConvexError
+                        ? error.message
+                        : "Failed to add notification",
+                    );
+                  }
+                }}
+                type="submit"
+                size="sm"
+              >
                 Post Reply
               </Button>
               <Button

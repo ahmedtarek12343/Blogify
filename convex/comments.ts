@@ -61,13 +61,19 @@ export const DeleteComment = mutation({
     if (!comment) {
       throw new ConvexError("Comment not found");
     }
+    const user = await authComponent.safeGetAuthUser(ctx);
+    if (!user) {
+      throw new ConvexError("User not authenticated");
+    }
+    if (comment.authorId !== user._id) {
+      throw new ConvexError("You are not authorized to delete this comment");
+    }
 
     await deleteCommentTree(ctx, commentId);
   },
 });
 
 async function deleteCommentTree(ctx: MutationCtx, commentId: Id<"comments">) {
-  // Find direct replies using the index
   const children = await ctx.db
     .query("comments")
     .withIndex("by_parent_comment_id", (q) =>
@@ -75,12 +81,19 @@ async function deleteCommentTree(ctx: MutationCtx, commentId: Id<"comments">) {
     )
     .collect();
 
-  // Recursively delete all children
   for (const child of children) {
     await deleteCommentTree(ctx, child._id);
   }
 
-  // Delete this comment
+  const likes = await ctx.db
+    .query("likedcomments")
+    .withIndex("by_comment_id", (q) => q.eq("commentId", commentId))
+    .collect();
+
+  for (const like of likes) {
+    await ctx.db.delete(like._id);
+  }
+
   await ctx.db.delete(commentId);
 }
 

@@ -52,7 +52,7 @@ export default defineSchema({
       fields: ["postId"],
     }),
   follow: defineTable({
-    followerId: v.id("user"),
+    followerId: v.string(),
     followingId: v.string(),
   })
     .index("by_follower_id", {
@@ -64,4 +64,13 @@ export default defineSchema({
     .index("by_follower_and_following", {
       fields: ["followerId", "followingId"],
     }),
+  notifications: defineTable({
+    userId: v.string(),
+    type: v.string(),
+    message: v.string(),
+    isRead: v.boolean(),
+    triggeredBy: v.string(),
+  }).index("by_user_id", {
+    fields: ["userId"],
+  }),
 });

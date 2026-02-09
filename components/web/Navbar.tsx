@@ -8,6 +8,7 @@ import { NavLink } from "./NavLink";
 import { motion } from "framer-motion";
 import SignedInMenu from "../comp-377";
 import BlogSearch from "../comp-333";
+import NotificationBtn from "./NotificationBtn";
 
 export function Navbar() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -62,6 +63,7 @@ export function Navbar() {
             <Loader2Icon className="animate-spin" />
           </Button>
         )}
+        <NotificationBtn />
         {isAuthenticated && !isLoading && <SignedInMenu />}
       </div>
     </motion.nav>
