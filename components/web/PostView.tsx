@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import LazyImage from "./LazyImage";
@@ -8,10 +8,15 @@ import { Skeleton } from "../ui/skeleton";
 import { Separator } from "../ui/separator";
 import CommentSection from "./AddCommentSection";
 import { PostPresence } from "./PostPresence";
+import { Button } from "../ui/button";
+import { toast } from "sonner";
+import { ConvexError } from "convex/values";
 
 const PostView = ({ postId }: { postId: Id<"posts"> }) => {
   const post = useQuery(api.posts.getPostById, { id: postId });
   const userId = useQuery(api.presence.getUserId);
+  const likePost = useMutation(api.posts.toggleLikePost);
+  const isLiked = useQuery(api.posts.isLikedPost, userId ? { postId } : "skip");
   if (post === undefined) {
     return <PostSkeleton />;
   }
@@ -22,6 +27,28 @@ const PostView = ({ postId }: { postId: Id<"posts"> }) => {
         <LazyImage src={post.imageUrl ?? "/download.png"} alt={post.title} />
       </div>
       <div className="w-full flex items-end mt-5 flex-col">
+        <Button
+          onClick={async () => {
+            try {
+              await likePost({
+                postId,
+              });
+              toast.success(
+                isLiked
+                  ? "Post unliked successfully"
+                  : "Post liked successfully",
+              );
+            } catch (error) {
+              toast.error(
+                error instanceof ConvexError
+                  ? error.data
+                  : "Something went wrong",
+              );
+            }
+          }}
+        >
+          {isLiked ? "Unlike" : "Like"}
+        </Button>
         <p className="text-muted-foreground text-sm">
           Posted by:{" "}
           {post.author?.name || post.author?.email || "Unknown Author"}

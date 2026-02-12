@@ -6,6 +6,7 @@ import { ArrowLeftIcon } from "lucide-react";
 
 const page = async ({ params }: { params: Promise<{ postID: string }> }) => {
   const { postID } = await params;
+
   return (
     <div className="py-12">
       <Link

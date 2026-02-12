@@ -1,7 +1,7 @@
 "use client";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Trash2Icon } from "lucide-react";
+import { HeartIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import { Button, buttonVariants } from "../ui/button";
 import { ConvexError } from "convex/values";
 import { toast } from "sonner";
@@ -22,39 +22,21 @@ import LazyImage from "./LazyImage";
 
 const TaskView = () => {
   const user = useQuery(api.auth.getCurrentUser);
-  const posts = useQuery(api.posts.getPosts);
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.posts.getPosts,
+    {},
+    { initialNumItems: 3 },
+  );
   const deletePost = useMutation(api.posts.deletePost);
   const [filterPosts, setFilterPosts] = useState(false);
 
-  if (posts === undefined) {
+  if (results === undefined || user === undefined) {
     return <BlogSkeleton />;
   }
 
-  if (user === null) {
-    return (
-      <div className="flex justify-center flex-col items-center min-h-[200px]">
-        <p className="text-gray-500">Not authenticated</p>
-        <Link
-          className={buttonVariants({ className: "mt-2" })}
-          href="/auth/login"
-        >
-          Login
-        </Link>
-      </div>
-    );
-  }
-
-  if (posts.length === 0) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <p className="text-gray-500">No posts found</p>
-      </div>
-    );
-  }
-
   const filteredPosts = filterPosts
-    ? posts?.filter((post) => post.authorId === user?._id)
-    : posts;
+    ? results?.filter((post) => post.authorId === user?._id)
+    : results;
 
   async function handleDeletePost(id: Id<"posts">) {
     try {
@@ -66,7 +48,6 @@ const TaskView = () => {
       toast.error(errorMessage);
     }
   }
-
   return (
     <div>
       <div className="mb-6 flex justify-end">
@@ -95,24 +76,30 @@ const TaskView = () => {
                 transition={{ duration: 0.2 }}
               >
                 <Card className="group pt-0 h-full hover:shadow-lg transition-all duration-300 border-border/50 overflow-hidden">
-                  <div className="relative h-48">
+                  <div className="relative h-48 w-full overflow-hidden">
                     <LazyImage
                       src={post.imageUrl ?? "/download.png"}
                       alt={post.title}
                     />
-                    {post.authorId === user?._id && (
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePost(post._id);
-                        }}
-                        className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                      >
-                        <Trash2Icon className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <div className="absolute top-3 right-3 flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-background/80 backdrop-blur-md border border-border/50 text-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 shadow-sm">
+                        <HeartIcon className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+                        <span className="text-xs font-bold">{post.likes}</span>
+                      </div>
+                      {post.authorId === user?._id && (
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePost(post._id);
+                          }}
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0 shadow-md"
+                        >
+                          <Trash2Icon className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <CardHeader className="pb-2">
@@ -167,6 +154,21 @@ const TaskView = () => {
           )}
         </AnimatePresence>
       </div>
+
+      <>
+        {status !== "Exhausted" && (
+          <Button
+            onClick={() => loadMore(3)}
+            disabled={status !== "CanLoadMore"}
+            className="mt-6 w-full"
+          >
+            {status === "LoadingMore" && (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            )}
+            {status === "CanLoadMore" && "Load More"}
+          </Button>
+        )}
+      </>
     </div>
   );
 };

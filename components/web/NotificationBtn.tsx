@@ -11,10 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Separator } from "../ui/separator";
+import { useState } from "react";
 import Link from "next/link";
 
 export default function SignedInMenu() {
+  const [open, setOpen] = useState(false);
   const notifications = useQuery(api.notifications.GetNotifications);
   const markAllAsRead = useMutation(api.notifications.MarkNotificationsAsRead);
   if (notifications === undefined) {
@@ -29,12 +30,13 @@ export default function SignedInMenu() {
   );
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           onPointerDown={() => {
             if (unReadNotifications.length > 0) {
               markAllAsRead();
+              setOpen(!open);
             }
           }}
           className="h-auto p-0 hover:bg-transparent"
@@ -71,10 +73,13 @@ export default function SignedInMenu() {
             );
           })
         )}
-        {notifications.length >= 4 && (
+        {notifications.length > 0 && (
           <Link
+            onClick={() => {
+              setOpen(false);
+            }}
             href="/notifications"
-            className="text-center text-sm bg-primary transition hover:bg-primary/80 py-2 block"
+            className="text-center text-foreground text-sm bg-primary transition hover:bg-primary/80 py-1 block"
           >
             View All
           </Link>

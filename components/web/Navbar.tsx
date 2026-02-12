@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import SignedInMenu from "../comp-377";
 import BlogSearch from "../comp-333";
 import NotificationBtn from "./NotificationBtn";
+import MessageBtn from "./MessageBtn";
 
 export function Navbar() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -17,7 +18,7 @@ export function Navbar() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="h-16 container mx-auto px-5 flex items-center justify-between"
+      className="h-16 container mx-auto flex items-center justify-between"
     >
       <div className="flex h-full items-center gap-8">
         <div className="flex items-center gap-8">
@@ -40,6 +41,17 @@ export function Navbar() {
         </ul>
       </div>
       <div className="flex items-center gap-3">
+        <BlogSearch />
+        <div className="hidden md:flex items-center gap-3">
+          <ThemeToggle />
+        </div>
+        <NotificationBtn />
+        <MessageBtn />
+        {isLoading && (
+          <Button variant="outline">
+            <Loader2Icon className="animate-spin" />
+          </Button>
+        )}
         {!isAuthenticated && !isLoading && (
           <>
             <Link className={buttonVariants()} href="/auth/signup">
@@ -54,16 +66,6 @@ export function Navbar() {
             </Link>
           </>
         )}
-        <BlogSearch />
-        <div className="hidden md:flex items-center gap-3">
-          <ThemeToggle />
-        </div>
-        {isLoading && (
-          <Button variant="outline">
-            <Loader2Icon className="animate-spin" />
-          </Button>
-        )}
-        <NotificationBtn />
         {isAuthenticated && !isLoading && <SignedInMenu />}
       </div>
     </motion.nav>

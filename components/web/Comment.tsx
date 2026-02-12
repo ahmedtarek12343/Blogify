@@ -236,7 +236,9 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                           AddNotification({
                             type: "like",
                             userId: comment.authorId,
-                            message: `${user?.name} liked your comment : ${comment.body.slice(0, 40)}...`,
+                            message: `${user?.name} liked your comment : ${comment.body}`,
+                            postId: comment.postId,
+                            commentId: comment._id,
                           });
                         }
                       } catch (error) {
@@ -314,8 +316,10 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                   try {
                     await AddNotification({
                       userId: comment.authorId,
-                      message: `${user?.name} replied to your comment : ${comment.body.slice(0, 40)}...`,
+                      message: `${user?.name} replied to your comment : ${comment.body}`,
                       type: "comment",
+                      postId: comment.postId,
+                      commentId: comment._id,
                     });
                   } catch (error) {
                     toast.error(

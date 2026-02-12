@@ -16,4 +16,8 @@ export const notificationType: Record<
     icons: BookTextIcon,
     color: "success",
   },
+  post: {
+    icons: BookTextIcon,
+    color: "success",
+  },
 } as const;

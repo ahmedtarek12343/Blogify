@@ -13,6 +13,9 @@ export default defineSchema({
     })
     .searchIndex("by_search_body", {
       searchField: "body",
+    })
+    .index("by_author_id", {
+      fields: ["authorId"],
     }),
   comments: defineTable({
     postId: v.id("posts"),
@@ -50,6 +53,9 @@ export default defineSchema({
     })
     .index("by_post_id", {
       fields: ["postId"],
+    })
+    .index("by_author_and_post", {
+      fields: ["authorId", "postId"],
     }),
   follow: defineTable({
     followerId: v.string(),
@@ -70,7 +76,22 @@ export default defineSchema({
     message: v.string(),
     isRead: v.boolean(),
     triggeredBy: v.string(),
+    postId: v.optional(v.id("posts")),
+    commentId: v.optional(v.id("comments")),
   }).index("by_user_id", {
     fields: ["userId"],
   }),
+  messages: defineTable({
+    conversationId: v.string(),
+    senderId: v.string(),
+    receiverId: v.string(),
+    body: v.string(),
+    isRead: v.boolean(),
+  })
+    .index("by_conversation_id", {
+      fields: ["conversationId"],
+    })
+    .index("by_sender_id", {
+      fields: ["senderId"],
+    }),
 });

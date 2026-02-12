@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 import z from "zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ConvexError } from "convex/values";
 import {
@@ -31,6 +31,10 @@ const CreatePage = () => {
   const router = useRouter();
   const createPost = useMutation(api.posts.AddPost);
   const generateUploadUrl = useMutation(api.posts.generateImageUploadUrl);
+  const user = useQuery(api.auth.getCurrentUser);
+  if (user === null) {
+    router.push("/login");
+  }
 
   const {
     handleSubmit,

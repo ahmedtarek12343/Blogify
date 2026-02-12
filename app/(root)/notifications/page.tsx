@@ -1,5 +1,7 @@
+import AllNotis from "@/components/web/AllNotis";
+
 const NotificationPage = () => {
-  return <div>NotificationPage</div>;
+  return <AllNotis />;
 };
 
 export default NotificationPage;

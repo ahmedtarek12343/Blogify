@@ -7,6 +7,8 @@ export const AddNotifications = mutation({
     userId: v.string(),
     type: v.string(),
     message: v.string(),
+    postId: v.optional(v.id("posts")),
+    commentId: v.optional(v.id("comments")),
   },
   handler: async (ctx, args) => {
     const user = await authComponent.safeGetAuthUser(ctx);
@@ -48,8 +50,23 @@ export const GetNotifications = query({
     const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+      .order("desc")
       .collect();
-    return notifications;
+
+    // Enrich notifications with sender info
+    const enrichedNotifications = await Promise.all(
+      notifications.map(async (n) => {
+        const sender = await authComponent.getAnyUserById(ctx, n.triggeredBy);
+        return {
+          ...n,
+          senderName: sender?.name || "Unknown",
+          senderImage: sender?.image || "",
+          senderId: sender?._id,
+        };
+      }),
+    );
+
+    return enrichedNotifications;
   },
 });
 

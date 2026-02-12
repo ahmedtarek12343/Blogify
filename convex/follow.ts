@@ -40,7 +40,16 @@ export const GetFollowers = query({
       .query("follow")
       .withIndex("by_following_id", (q) => q.eq("followingId", userId))
       .collect();
-    return followers;
+    const users = await Promise.all(
+      followers.map(async (follower) => {
+        const user = await authComponent.getAnyUserById(
+          ctx,
+          follower.followerId,
+        );
+        return user;
+      }),
+    );
+    return users;
   },
 });
 
