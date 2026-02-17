@@ -73,6 +73,8 @@ export const DeleteComment = mutation({
   },
 });
 
+// asda
+
 async function deleteCommentTree(ctx: MutationCtx, commentId: Id<"comments">) {
   const children = await ctx.db
     .query("comments")
