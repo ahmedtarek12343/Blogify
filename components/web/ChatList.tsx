@@ -5,9 +5,10 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useMutation } from "convex/react";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Send } from "lucide-react";
 import { ConvexError } from "convex/values";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const ChatList = ({ id }: { id: string }) => {
   const user = useQuery(api.auth.getCurrentUser);
@@ -52,6 +53,23 @@ const ChatList = ({ id }: { id: string }) => {
     }
     mark();
   }, []);
+  useEffect(() => {
+    async function mark() {
+      try {
+        if (user) {
+          await markAsRead({
+            senderId: id,
+            receiverId: user?._id as string,
+          });
+        }
+      } catch (err) {
+        toast.error(
+          err instanceof ConvexError ? err.data : "Something went wrong",
+        );
+      }
+    }
+    mark();
+  }, [messages]);
 
   if (user === null) {
     return (
@@ -87,8 +105,24 @@ const ChatList = ({ id }: { id: string }) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div id="chat-list" className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-full bg-background rounded-r-lg">
+      {/* Header */}
+      <div className="flex items-center gap-3 p-3 border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+        <Link href="/messages" className="md:hidden">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </Link>
+        <div className="flex items-center gap-2">
+          {/* You might want to fetch and show the other user's name/avatar here later */}
+          {/* For now keeping it simple as per original */}
+        </div>
+      </div>
+
+      <div
+        id="chat-list"
+        className="flex-1 overflow-y-auto md:p-4 p-2 space-y-4 scroll-smooth"
+      >
         {messages.map((message) => {
           return (
             <div

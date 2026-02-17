@@ -22,21 +22,23 @@ import LazyImage from "./LazyImage";
 
 const TaskView = () => {
   const user = useQuery(api.auth.getCurrentUser);
+  const [filterPosts, setFilterPosts] = useState(false);
+
   const { results, status, loadMore } = usePaginatedQuery(
     api.posts.getPosts,
-    {},
+    { userId: user?._id },
     { initialNumItems: 3 },
   );
+
   const deletePost = useMutation(api.posts.deletePost);
-  const [filterPosts, setFilterPosts] = useState(false);
+
+  const filteredPosts = filterPosts
+    ? results.filter((item) => item.authorId === user?._id)
+    : results;
 
   if (results === undefined || user === undefined) {
     return <BlogSkeleton />;
   }
-
-  const filteredPosts = filterPosts
-    ? results?.filter((post) => post.authorId === user?._id)
-    : results;
 
   async function handleDeletePost(id: Id<"posts">) {
     try {
@@ -61,7 +63,7 @@ const TaskView = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence mode="popLayout">
-          {filteredPosts.length === 0 ? (
+          {filteredPosts?.length === 0 ? (
             <div className="flex justify-center col-span-full items-center min-h-[200px]">
               <p className="text-gray-500">No posts found</p>
             </div>
@@ -132,12 +134,19 @@ const TaskView = () => {
 
                   <CardFooter className="flex items-center justify-between text-xs text-muted-foreground border-t">
                     <div className="flex items-center justify-between w-full gap-2">
-                      <span className="font-medium text-foreground">
+                      <Link
+                        href={`/profile/${post.authorId}`}
+                        className={
+                          buttonVariants({
+                            variant: "link",
+                          }) + " text-xs !text-foreground"
+                        }
+                      >
                         By:{" "}
                         {post.author?.name ||
                           post.author?.email ||
                           "Unknown Author"}
-                      </span>
+                      </Link>
                       <Link
                         href={`/blog/${post._id}`}
                         className={buttonVariants({

@@ -46,7 +46,7 @@ const CommentSection = ({ postId }: { postId: Id<"posts"> }) => {
           {comments?.comments.length} Comments
         </p>
       </CardHeader>
-      <CardContent>
+      <CardContent className="md:px-6 px-1">
         <CommentsView comments={comments?.comments} users={comments?.users} />
         <form
           onSubmit={handleSubmit(onSubmit)}

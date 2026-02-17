@@ -24,7 +24,6 @@ export default function FileUploadComponent({ field }: { field: any }) {
     accept: "image/*",
     maxSize,
   });
-  console.log(files);
 
   const previewUrl = files[0]?.preview || null;
 
@@ -61,7 +60,7 @@ export default function FileUploadComponent({ field }: { field: any }) {
             <div className="absolute inset-0">
               <Image
                 alt={files[0]?.file?.name || "Uploaded image"}
-                className="size-full object-cover"
+                className="size-full object-contain"
                 src={previewUrl}
                 width={500}
                 height={500}

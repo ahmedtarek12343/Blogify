@@ -94,4 +94,17 @@ export default defineSchema({
     .index("by_sender_id", {
       fields: ["senderId"],
     }),
+  userSearchIndex: defineTable({
+    userId: v.string(),
+    name: v.string(),
+    email: v.string(),
+    image: v.optional(v.string()),
+  })
+    .index("by_user_id", ["userId"])
+    .searchIndex("search_by_name", {
+      searchField: "name",
+    })
+    .searchIndex("search_by_email", {
+      searchField: "email",
+    }),
 });

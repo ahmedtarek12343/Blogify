@@ -31,6 +31,7 @@ export const getMessages = query({
   },
   handler: async (ctx, args) => {
     const { senderId, receiverId } = args;
+
     return await ctx.db
       .query("messages")
       .withIndex("by_conversation_id", (q) =>

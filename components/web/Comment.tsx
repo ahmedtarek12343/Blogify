@@ -26,6 +26,8 @@ import DeleteModal from "../comp-313";
 import EditModal from "./EditModal";
 import ShowLikesModal from "./ShowLikesModal";
 import { AnimatePresence, motion } from "framer-motion";
+import EllipsisMenu from "../comp-366";
+import Link from "next/link";
 
 interface CommentProps {
   comment: Doc<"comments">;
@@ -126,34 +128,37 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
     <div className="flex flex-col gap-2">
       {/* Main Comment */}
       <div
-        className="flex gap-3 group"
-        style={{ marginLeft: `${depth * 20}px` }}
+        className="flex gap-2 md:gap-3 group"
+        style={{ marginLeft: `${depth * 20}px` } as any}
       >
         <div className="shrink-0">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+          <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
             {users?.find((u: any) => u._id === comment.authorId)?.image ? (
               <Image
                 src={users?.find((u: any) => u._id === comment.authorId)?.image}
                 alt="User"
                 width={32}
                 height={32}
-                className="rounded-full"
+                className="rounded-full w-full h-full object-cover"
               />
             ) : (
-              <User className="w-4 h-4" />
+              <User className="w-3 h-3 md:w-4 md:h-4" />
             )}
           </div>
         </div>
 
-        <div className="flex flex-col w-full bg-muted/40 p-3 rounded-lg rounded-tl-none border border-border/50 hover:bg-muted/60 transition-colors">
-          <div className="flex justify-between items-center">
-            <div className="">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-sm">
+        <div className="flex flex-col w-full bg-muted/40 p-2 md:p-3 rounded-lg rounded-tl-none border border-border/50 hover:bg-muted/60 transition-colors">
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
+                <Link
+                  href={`/profile/${comment.authorId}`}
+                  className="font-semibold text-sm truncate max-w-[150px] md:max-w-none"
+                >
                   {comment.authorName}
-                </span>
+                </Link>
                 <span className="text-xs text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
                   {formatRelativeTime(comment._creationTime)}
                 </span>
 
@@ -164,18 +169,18 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                 )}
               </div>
 
-              <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+              <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap break-words">
                 {comment.body}
               </p>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 mt-2">
+              <div className="flex items-center gap-2 mt-2">
                 {canReply && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowReplyForm(!showReplyForm)}
-                    className="h-7 text-xs"
+                    className="h-6 px-2 text-xs md:h-7"
                   >
                     <Reply className="w-3 h-3 mr-1" />
                     Reply
@@ -187,7 +192,7 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowReplies(!showReplies)}
-                    className="h-7 text-xs"
+                    className="h-6 px-2 text-xs md:h-7"
                   >
                     {showReplies ? (
                       <ChevronUp className="w-3 h-3 mr-1" />
@@ -195,34 +200,37 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                       <ChevronDown className="w-3 h-3 mr-1" />
                     )}
                     {replies.length}{" "}
-                    {replies.length === 1 ? "reply" : "replies"}
+                    <span className="hidden sm:inline">
+                      {replies.length === 1 ? "reply" : "replies"}
+                    </span>
                   </Button>
                 )}
               </div>
             </div>
-            <div className="flex items-center">
+
+            <div className="flex items-center gap-0.5 md:gap-1 shrink-0 -mt-1 md:mt-0">
+              {/* Desktop Actions */}
               {user?._id === comment.authorId && (
-                <div className="flex items-center">
-                  <div className="">
-                    <Button
-                      onClick={() => setShowDeleteModal(true)}
-                      variant="ghost"
-                      size="sm"
-                    >
-                      <Trash2Icon />
-                    </Button>
-                  </div>
-                  <div className="">
-                    <Button
-                      onClick={() => setShowEditModal(true)}
-                      variant="ghost"
-                      size="sm"
-                    >
-                      <Edit2Icon />
-                    </Button>
-                  </div>
+                <div className="hidden md:flex items-center">
+                  <Button
+                    onClick={() => setShowDeleteModal(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Trash2Icon className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={() => setShowEditModal(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Edit2Icon className="w-4 h-4" />
+                  </Button>
                 </div>
               )}
+
               <div className="flex items-center">
                 <motion.div
                   whileTap={{ scale: 1.3 }}
@@ -251,33 +259,45 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                     }}
                     variant="ghost"
                     size="sm"
-                    className="pr-0"
+                    className="h-8 w-8 p-0 md:w-auto md:px-3"
                   >
                     {likeExists ? (
-                      <Heart className="fill-red-500 stroke-red-500" />
+                      <Heart className="w-4 h-4 fill-red-500 stroke-red-500" />
                     ) : (
-                      <Heart />
+                      <Heart className="w-4 h-4" />
                     )}
                   </Button>
                 </motion.div>
-                <Button
-                  variant={"link"}
-                  onClick={() => setShowLikedUsers(true)}
-                  className="text-foreground"
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={getLikesByCommentId?.likes.length}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      layout
-                      transition={{ duration: 0.2 }}
+                {getLikesByCommentId &&
+                  getLikesByCommentId?.likes.length > 0 && (
+                    <Button
+                      variant={"link"}
+                      onClick={() => setShowLikedUsers(true)}
+                      className="text-foreground h-8 px-1 min-w-6"
                     >
-                      {getLikesByCommentId?.likes.length || ""}
-                    </motion.p>
-                  </AnimatePresence>
-                </Button>
+                      <AnimatePresence mode="wait">
+                        <motion.p
+                          key={getLikesByCommentId?.likes.length}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          layout
+                          transition={{ duration: 0.2 }}
+                          className="text-xs"
+                        >
+                          {getLikesByCommentId?.likes.length || ""}
+                        </motion.p>
+                      </AnimatePresence>
+                    </Button>
+                  )}
+              </div>
+              {/* Mobile Menu (Always shown but with different items based on auth) */}
+              <div className="md:hidden">
+                <EllipsisMenu
+                  isAuthor={user?._id === comment.authorId}
+                  onEdit={() => setShowEditModal(true)}
+                  onDelete={() => setShowDeleteModal(true)}
+                />
               </div>
             </div>
           </div>
@@ -286,7 +306,10 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
 
       {/* Reply Form */}
       {showReplyForm && (
-        <div style={{ marginLeft: `${(depth + 1) * 40}px` }}>
+        <div
+          style={{ marginLeft: `${(depth + 1) * 20}px` }}
+          className="pl-2 md:pl-0"
+        >
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-2 p-3 bg-muted/20 rounded-lg border border-border/30"
@@ -299,7 +322,7 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                   <Input
                     {...field}
                     placeholder="Write a reply..."
-                    className="text-sm"
+                    className="text-sm h-9"
                     autoFocus
                   />
                   {fieldState.error && (
@@ -310,7 +333,18 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                 </>
               )}
             />
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowReplyForm(false);
+                  reset();
+                }}
+              >
+                Cancel
+              </Button>
               <Button
                 onClick={async () => {
                   try {
@@ -332,18 +366,7 @@ const Comment = ({ comment, depth = 0, users }: CommentProps) => {
                 type="submit"
                 size="sm"
               >
-                Post Reply
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShowReplyForm(false);
-                  reset();
-                }}
-              >
-                Cancel
+                Reply
               </Button>
             </div>
           </form>

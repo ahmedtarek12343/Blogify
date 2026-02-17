@@ -10,6 +10,7 @@ import { signInSchema } from "@/schemas/auth";
 import z from "zod";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import Image from "next/image";
 import { Loader2Icon } from "lucide-react";
 import {
   Field,
@@ -51,13 +52,12 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <Card className="w-full max-w-md p-8 space-y-8">
+      <Card className="w-full max-w-md p-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to your account</p>
+          <p className="text-muted-foreground"> Sign in to your account</p>
         </div>
-        <Separator />
-        <div className="flex flex-col gap-2">
+        <div className="flex justify-center items-center gap-2">
           <Button
             onClick={() => {
               authClient.signIn.social({
@@ -76,9 +76,17 @@ const LoginPage = () => {
             variant="outline"
             className="w-full"
           >
+            <Image
+              src="/download__1_-removebg-preview.png"
+              alt="Logo"
+              width={20}
+              height={20}
+              className="mr-2"
+            />
             Sign in with Google
           </Button>
         </div>
+        <Separator className="my-2" />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <FieldGroup className="flex flex-col gap-2">

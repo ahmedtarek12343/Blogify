@@ -1,20 +1,25 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { notificationType } from "@/types/data";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { Check } from "lucide-react";
+import { Check, Loader2Icon } from "lucide-react";
+import { Button } from "../ui/button";
 
 const AllNotis = () => {
-  const notifications = useQuery(api.notifications.GetNotifications);
+  const { results, loadMore, status } = usePaginatedQuery(
+    api.notifications.GetNotifications,
+    {},
+    { initialNumItems: 2 },
+  );
   const user = useQuery(api.auth.getCurrentUser);
   const markAsRead = useMutation(api.notifications.MarkNotificationsAsRead);
   const router = useRouter();
 
-  if (notifications === undefined || user === undefined) {
+  if (results === undefined || user === undefined) {
     return (
       <div className="p-4 text-center text-muted-foreground">
         Loading notifications...
@@ -22,7 +27,7 @@ const AllNotis = () => {
     );
   }
 
-  if (notifications === null || user === null) {
+  if (results === null || user === null) {
     return (
       <div className="p-4 text-center text-muted-foreground">
         Please sign in to view notifications.
@@ -30,7 +35,7 @@ const AllNotis = () => {
     );
   }
 
-  if (notifications.length === 0) {
+  if (results.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-10 text-muted-foreground">
         <p>No notifications yet</p>
@@ -51,7 +56,7 @@ const AllNotis = () => {
       </div>
 
       <div className="flex flex-col gap-3">
-        {notifications.map((notification) => {
+        {results.map((notification) => {
           const { icons: Icon, color } = notificationType[
             notification.type
           ] || { icons: Check, color: "text-gray-500" };
@@ -134,6 +139,19 @@ const AllNotis = () => {
             </div>
           );
         })}
+
+        {status !== "Exhausted" && (
+          <Button
+            onClick={() => loadMore(3)}
+            disabled={status !== "CanLoadMore"}
+            className=" w-full"
+          >
+            {status === "LoadingMore" && (
+              <Loader2Icon className="h-4 w-4 animate-spin" />
+            )}
+            {status === "CanLoadMore" && "Load More"}
+          </Button>
+        )}
       </div>
     </div>
   );

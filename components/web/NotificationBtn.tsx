@@ -9,14 +9,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import Link from "next/link";
 
 export default function SignedInMenu() {
   const [open, setOpen] = useState(false);
-  const notifications = useQuery(api.notifications.GetNotifications);
+  const { results: notifications } = usePaginatedQuery(
+    api.notifications.GetNotifications,
+    {},
+    { initialNumItems: 2 },
+  );
   const markAllAsRead = useMutation(api.notifications.MarkNotificationsAsRead);
   if (notifications === undefined) {
     return <Loader2Icon className="animate-spin" />;

@@ -23,7 +23,7 @@ const PostView = ({ postId }: { postId: Id<"posts"> }) => {
 
   return (
     <div>
-      <div className="relative h-[600px] aspect-video max-w-4xl mx-auto">
+      <div className="relative aspect-video max-w-4xl mx-auto">
         <LazyImage src={post.imageUrl ?? "/download.png"} alt={post.title} />
       </div>
       <div className="w-full flex items-end mt-5 flex-col">

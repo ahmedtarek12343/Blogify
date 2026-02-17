@@ -111,9 +111,12 @@ export const getUserLikedPosts = query({
 });
 
 export const getPosts = query({
-  args: { paginationOpts: paginationOptsValidator },
+  args: {
+    paginationOpts: paginationOptsValidator,
+    userId: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const posts = await ctx.db
+    let posts = await ctx.db
       .query("posts")
       .order("desc")
       .paginate(args.paginationOpts);

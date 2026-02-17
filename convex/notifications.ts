@@ -1,6 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
+import { paginationOptsValidator } from "convex/server";
 
 export const AddNotifications = mutation({
   args: {
@@ -43,19 +44,25 @@ export const AddNotifications = mutation({
 });
 
 export const GetNotifications = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
     const user = await authComponent.safeGetAuthUser(ctx);
-    if (!user) return null;
+    if (!user) {
+      return {
+        page: [],
+        isDone: true,
+        continueCursor: "",
+      };
+    }
     const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_user_id", (q) => q.eq("userId", user._id))
       .order("desc")
-      .collect();
+      .paginate(args.paginationOpts);
 
     // Enrich notifications with sender info
     const enrichedNotifications = await Promise.all(
-      notifications.map(async (n) => {
+      notifications.page.map(async (n) => {
         const sender = await authComponent.getAnyUserById(ctx, n.triggeredBy);
         return {
           ...n,
@@ -66,7 +73,7 @@ export const GetNotifications = query({
       }),
     );
 
-    return enrichedNotifications;
+    return { ...notifications, page: enrichedNotifications };
   },
 });
 
